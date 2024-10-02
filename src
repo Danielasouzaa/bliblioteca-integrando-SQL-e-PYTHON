@@ -1,0 +1,108 @@
+import sqlite3
+
+# Conectando ao banco de dados SQLite
+conn = sqlite3.connect('biblioteca.db')
+cursor = conn.cursor()
+
+# Apagando tabelas existentes (se houver) para recriação
+cursor.execute('DROP TABLE IF EXISTS Emprestimos')
+cursor.execute('DROP TABLE IF EXISTS Livros')
+cursor.execute('DROP TABLE IF EXISTS Autores')
+
+# Criando tabela de Autores
+cursor.execute('''
+    CREATE TABLE Autores (
+        AutorID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Nome TEXT NOT NULL,
+        Nacionalidade TEXT
+    )
+''')
+
+# Criando tabela de Livros
+cursor.execute('''
+    CREATE TABLE Livros (
+        LivroID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Titulo TEXT NOT NULL,
+        AutorID INTEGER,
+        AnoPublicacao INTEGER,
+        Genero TEXT,
+        FOREIGN KEY (AutorID) REFERENCES Autores(AutorID)
+    )
+''')
+
+# Criando tabela de Empréstimos
+cursor.execute('''
+    CREATE TABLE Emprestimos (
+        EmprestimoID INTEGER PRIMARY KEY AUTOINCREMENT,
+        LivroID INTEGER,
+        DataEmprestimo TEXT,
+        DataDevolucao TEXT,
+        NomeUsuario TEXT,
+        FOREIGN KEY (LivroID) REFERENCES Livros(LivroID)
+    )
+''')
+
+# Inserindo autores
+autores = [
+    ('J.K. Rowling', 'Reino Unido'),
+    ('George R.R. Martin', 'Estados Unidos'),
+    ('J.R.R. Tolkien', 'Reino Unido'),
+    ('Agatha Christie', 'Reino Unido'),
+    ('Stephen King', 'Estados Unidos')
+]
+cursor.executemany('INSERT INTO Autores (Nome, Nacionalidade) VALUES (?, ?)', autores)
+
+# Inserindo livros
+livros = [
+    ('Harry Potter e a Pedra Filosofal', 1, 1997, 'Fantasia'),
+    ('Harry Potter e a Câmara Secreta', 1, 1998, 'Fantasia'),
+    ('A Game of Thrones', 2, 1996, 'Fantasia'),
+    ('O Hobbit', 3, 1937, 'Fantasia'),
+    ('O Senhor dos Anéis', 3, 1954, 'Fantasia'),
+    ('Assassinato no Expresso do Oriente', 4, 1934, 'Mistério'),
+    ('E Não Sobrou Nenhum', 4, 1939, 'Mistério'),
+    ('It - A Coisa', 5, 1986, 'Terror'),
+    ('O Iluminado', 5, 1977, 'Terror'),
+    ('Carrie, a Estranha', 5, 1974, 'Terror')
+]
+cursor.executemany('INSERT INTO Livros (Titulo, AutorID, AnoPublicacao, Genero) VALUES (?, ?, ?, ?)', livros)
+
+# Inserindo empréstimos
+emprestimos = [
+    (1, '2024-08-01', None, 'Alice Souza'),
+    (2, '2024-08-03', '2024-08-10', 'Bruno Lima'),
+    (3, '2024-08-05', None, 'Carla Silva'),
+    (4, '2024-08-07', '2024-08-14', 'Daniel Oliveira'),
+    (5, '2024-08-10', None, 'Eduardo Santos')
+]
+cursor.executemany('INSERT INTO Emprestimos (LivroID, DataEmprestimo, DataDevolucao, NomeUsuario) VALUES (?, ?, ?, ?)',
+                   emprestimos)
+
+# Salvando as mudanças
+conn.commit()
+
+# Consultando e exibindo os dados inseridos
+
+# Exibindo Autores
+cursor.execute('SELECT * FROM Autores')
+autores_result = cursor.fetchall()
+print("Autores inseridos:")
+for autor in autores_result:
+    print(autor)
+
+# Exibindo Livros
+cursor.execute('SELECT * FROM Livros')
+livros_result = cursor.fetchall()
+print("\nLivros inseridos:")
+for livro in livros_result:
+    print(livro)
+
+# Exibindo Empréstimos
+cursor.execute('SELECT * FROM Emprestimos')
+emprestimos_result = cursor.fetchall()
+print("\nEmpréstimos inseridos:")
+for emprestimo in emprestimos_result:
+    print(emprestimo)
+
+# Fechando a conexão
+conn.close()
